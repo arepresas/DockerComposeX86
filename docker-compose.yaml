@@ -1,0 +1,298 @@
+# systemctl enable --now docker.service  Auto restart docker containers after shutdown
+
+version: "3"
+services:
+  traefik:
+    container_name: "traefik"
+    image: "traefik:latest"
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme.email=${RESOLVER_MAIL}
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesResolvers.myresolver.acme.httpChallenge.entryPoint=web"
+      # Test environment for Letsencrypt
+      # - --certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+    volumes:
+      - ./docker/traefik/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    labels:    
+      # Redirect all HTTP to HTTPS permanently
+      - traefik.http.routers.http_catchall.rule=HostRegexp(`{any:.+}`)
+      - traefik.http.routers.http_catchall.entrypoints=web
+      - traefik.http.routers.http_catchall.middlewares=https_redirect
+      - traefik.http.middlewares.https_redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.https_redirect.redirectscheme.permanent=true
+      # Config for traefik host
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST}`)
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=myresolver
+      - traefik.http.middlewares.traefik.compress=true
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.traefik.middlewares=traefik@docker
+
+#############################
+###   TRAEFIK OK          ###
+#############################
+
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ./docker/heimdall/config:/config
+    restart: always
+    labels:
+      - traefik.http.routers.heimdall.rule=Host(`${HEIMDAL_HOST}`)
+      - traefik.http.routers.heimdall.tls=true
+      - traefik.http.routers.heimdall.tls.certresolver=myresolver
+      - traefik.http.middlewares.heimdall.compress=true
+      - traefik.http.routers.heimdall.middlewares=heimdall@docker
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/portainer/data:/data
+    # ports:
+    #   - 8000:8000/tcp
+    restart: always
+    labels:
+      - traefik.http.routers.portainer.rule=Host(`${PORTAINER_HOST}`)
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=myresolver
+      - traefik.http.middlewares.portainer.compress=true
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer.middlewares=portainer@docker
+
+  firefox:
+    container_name: firefox
+    image: jlesage/firefox
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    shm_size: 2gb
+    security_opt:
+        - seccomp:unconfined
+    volumes:
+      - ./docker/firefox/config:/config:rw
+    restart: always
+    labels:
+      - traefik.http.routers.firefox.rule=Host(`${FIREFOX_HOST}`)
+      - traefik.http.routers.firexox.tls=true
+      - traefik.http.routers.firefox.tls.certresolver=myresolver
+      - traefik.http.middlewares.firefox.compress=true
+      - traefik.http.services.firefox.loadbalancer.server.port=5800
+      - traefik.http.routers.firefox.middlewares=firefox@docker
+
+  homeassistant:
+    container_name: homeassistant
+    image: homeassistant/home-assistant:stable
+    environment:
+      TZ: ${TZ}
+    volumes:
+        - ./docker/home-assistant/config:/config
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    restart: always
+    labels:
+      - traefik.http.routers.homeassistant.rule=Host(`${HOMEASSISTANT_HOST}`)
+      - traefik.http.routers.homeassistant.tls=true
+      - traefik.http.routers.homeassistant.tls.certresolver=myresolver
+      - traefik.http.middlewares.homeassistant.compress=true
+      - traefik.http.services.homeassistant.loadbalancer.server.port=8123
+      - traefik.http.routers.homeassistant.middlewares=homeassistant@docker
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    environment:
+      TZ: ${TZ}
+      WEBPASSWORD: ${PIHOLE_PWD}
+      ServerIp: ${PIHOLE_IP}
+      IPv6: 'false'
+    volumes:
+       - ./docker/pihole/etc:/etc/pihole
+       - ./docker/pihole/dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 67:67/udp
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    cap_add:
+      - NET_ADMIN
+    restart: always
+    labels:
+      - traefik.http.routers.pihole.rule=Host(`${PIHOLE_HOST}`)
+      - traefik.http.routers.pihole.tls=true
+      - traefik.http.routers.pihole.tls.certresolver=myresolver
+      - traefik.http.middlewares.pihole.compress=true
+      - traefik.http.services.pihole.loadbalancer.server.port=80
+      - traefik.http.routers.pihole.middlewares=pihole@docker
+
+  syncthing:
+    container_name: syncthing
+    image: linuxserver/syncthing
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: ${UMASK_SET}
+    volumes:
+      - ./docker/syncthing/config:/config
+      - ${EXT_DISK}:/DiscoExterno
+      - /usr/docker:/dockerConf
+      - ./data/SyncFolders:/SyncFolders
+    ports:
+      - 22000:22000/tcp
+      - 21027:21027/udp
+    restart: always
+    labels:
+      - traefik.http.routers.syncthing.rule=Host(`${SYNCTHING_HOST}`)
+      - traefik.http.routers.syncthing.tls=true
+      - traefik.http.routers.syncthing.tls.certresolver=myresolver
+      - traefik.http.middlewares.syncthing.compress=true
+      - traefik.http.routers.syncthing.middlewares=syncthing@docker
+
+  cloudcommander:
+    container_name: cloudcommander
+    image: coderaiser/cloudcmd
+    volumes:
+      - ~:/root
+      - /:/mnt/fs
+    restart: always
+    labels:
+      - traefik.http.routers.cloudcommander.rule=Host(`${CLOUDCOMMANDER_HOST}`)
+      - traefik.http.routers.cloudcommander.tls=true
+      - traefik.http.routers.cloudcommander.tls.certresolver=myresolver
+      - traefik.http.middlewares.cloudcommander.compress=true
+      - traefik.http.routers.cloudcommander.middlewares=cloudcommander@docker
+
+  netdata:
+    container_name: netdata
+    image: netdata/netdata
+    hostname: ${NETDATA_MAIN_HOSTNAME} # set to fqdn of host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # ports:
+    #   - 19999:19999/tcp
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    restart: always
+    labels:
+      - traefik.http.routers.netdata.rule=Host(`${NETDATA_HOST}`)
+      - traefik.http.routers.netdata.tls=true
+      - traefik.http.routers.netdata.tls.certresolver=myresolver
+      - traefik.http.middlewares.netdata.compress=true
+      - traefik.http.routers.netdata.middlewares=netdata@docker
+
+  shellinabox:
+    container_name: shellinabox
+    image: sspreitzer/shellinabox:latest
+    environment:
+      SIAB_USER: ${SIAB_USER}
+      SIAB_PASSWORD: ${SIAB_PASS}
+      SIAB_SUDO: 'true'  
+      SIAB_SSL: 'false'    
+    restart: always
+    labels:
+      - traefik.http.routers.shellinabox.rule=Host(`${SHELLINABOX_HOST}`)
+      - traefik.http.routers.shellinabox.tls=true
+      - traefik.http.routers.shellinabox.tls.certresolver=myresolver
+      - traefik.http.middlewares.shellinabox.compress=true
+      - traefik.http.services.shellinabox.loadbalancer.server.port=4200
+      - traefik.http.routers.shellinabox.middlewares=shellinabox@docker
+            
+###########################
+###   NO TRAEFIK        ###
+###########################
+
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower:latest
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      REPO_USER: ${WATCHTOWER_REPO_USER}
+      REPO_PASS: ${WATCHTOWER_REPO_PASS}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    labels:
+      - traefik.enable=false
+
+  samba:
+    container_name: samba
+    image: dperson/samba
+    environment:
+      TZ: ${TZ}
+      NMBD: 'true'
+      USER: ${SAMBA_USER_PASS}
+      USERID: '0'
+      GROUPID: '0'
+      SHARE: ${SAMBA_SHARE}
+      WORKGROUP: ${SAMBA_WORKGROUP}
+    stdin_open: true
+    tty: true
+    read_only: false
+    volumes:
+      - ${EXT_DISK}:/mnt
+    ports:
+      - 137:137/udp
+      - 138:138/udp
+      - 137:137/tcp
+      - 138:138/tcp
+      - 139:139/tcp
+      - 445:445/tcp
+    tmpfs:
+      - /tmp
+    restart: always
+    labels:
+      - traefik.enable=false
+
+  no-ip:
+    container_name: no-ip
+    image: romeupalos/noip
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ./docker/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
+    restart: always
+    labels:
+      - "traefik.enable=false"
+
+  ovh-dns:
+    container_name: ovh-dns
+    image: linuxserver/ddclient
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ./docker/ovh-dns/config:/config
+    restart: always
+    labels:
+      - traefik.enable=false

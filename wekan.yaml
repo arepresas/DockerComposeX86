@@ -1,0 +1,38 @@
+version: '3'
+services:
+  wekan-db:
+    image: quay.io/wekan/mongo:4.4.2-bionic
+    container_name: wekan-db
+    restart: always
+    command: mongod --logpath /dev/null --oplogSize 128 --quiet
+    expose:
+      - 27017
+    volumes:
+      - ./docker/wekan/db:/data/db
+      - ./docker/wekan/db-dump:/dump
+    labels:
+      - "traefik.enable=false"
+      
+  wekan-app:
+    image: quay.io/wekan/wekan
+    container_name: wekan-app
+    environment:
+      MONGO_URL: mongodb://wekan-db:27017/wekan
+      ROOT_URL: ${WEKAN_ROOT_URL}  #   <=== using only at same laptop/desktop where Wekan is installed
+      MAIL_URL: ${WEKAN_MAIL_URL}
+      MAIL_FROM: ${WEKAN_MAIL_FROM}
+      WITH_API: 'true'
+      RICHER_CARD_COMMENT_EDITOR: 'true'
+      CARD_OPENED_WEBHOOK_ENABLED: 'false'
+      BIGEVENTS_PATTERN: 'NONE'
+      BROWSER_POLICY_ENABLED: 'true'
+    depends_on:
+      - wekan-db
+    restart: always
+    labels:
+      - traefik.http.routers.wekan-app.rule=Host(`${WEKAN_HOST}`)
+      - traefik.http.routers.wekan-app.tls=true
+      - traefik.http.routers.wekan-app.tls.certresolver=myresolver
+      - traefik.http.middlewares.wekan-app.compress=true
+      - traefik.http.services.wekan-app.loadbalancer.server.port=8080
+      - traefik.http.routers.wekan-app.middlewares=wekan-app@docker
