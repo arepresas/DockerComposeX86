@@ -1,0 +1,40 @@
+version: "3"
+services:
+  codimd_db:
+    container_name: codimd_db
+    image: linuxserver/mariadb:latest
+    restart: always
+    volumes:
+      - ./docker/codimd/db/:/config
+    environment:
+      - MYSQL_ROOT_PASSWORD=${CODIMD_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${CODIMD_MYSQL_DATABASE}
+      - MYSQL_USER=${CODIMD_MYSQL_USER}
+      - MYSQL_PASSWORD=${CODIMD_MYSQL_PASSWORD}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+  codimd:
+    container_name: codimd
+    image: linuxserver/codimd:latest
+    depends_on:
+      - codimd_db
+    volumes:
+      - ./docker/codimd/config:/config
+    environment:
+      - DB_HOST=codimd_db
+      - DB_USER=${CODIMD_MYSQL_USER}
+      - DB_PASS=${CODIMD_MYSQL_PASSWORD}
+      - DB_NAME=${CODIMD_MYSQL_DATABASE}
+      - DB_PORT=3306
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    restart: always
+    labels:
+      - traefik.http.routers.codimd.rule=Host(`${CODIMD_HOST}`)
+      - traefik.http.routers.codimd.tls=true
+      - traefik.http.routers.codimd.tls.certresolver=myresolver
+      - traefik.http.middlewares.codimd.compress=true
+      - traefik.http.services.codimd.loadbalancer.server.port=3000
+      - traefik.http.routers.codimd.middlewares=codimd@docker
