@@ -153,6 +153,18 @@ services:
       - traefik.http.middlewares.netdata.compress=true
       - traefik.http.routers.netdata.middlewares=netdata@docker
 
+  openspeedtest:
+    container_name: openspeedtest
+    image: openspeedtest/latest
+    restart: always
+    labels:
+      - traefik.http.routers.openspeedtest.rule=Host(`${OPENSPEEDTEST_HOST}`)
+      - traefik.http.routers.openspeedtest.tls=true
+      - traefik.http.routers.openspeedtest.tls.certresolver=myresolver
+      - traefik.http.middlewares.openspeedtest.compress=true
+      - traefik.http.services.pihole.loadbalancer.server.port=8080
+      - traefik.http.routers.openspeedtest.middlewares=openspeedtest@docker
+
   glances:
     container_name: glances
     image: nicolargo/glances:latest-alpine
