@@ -153,6 +153,22 @@ services:
       - traefik.http.middlewares.netdata.compress=true
       - traefik.http.routers.netdata.middlewares=netdata@docker
 
+  glances:
+    container_name: glances
+    image: nicolargo/glances:latest-alpine
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "GLANCES_OPT=-w"
+    restart: always
+    labels:
+      - traefik.http.routers.glances.rule=Host(`${GLANCES_HOST}`)
+      - traefik.http.routers.glances.tls=true
+      - traefik.http.routers.glances.tls.certresolver=myresolver
+      - traefik.http.middlewares.glances.compress=true
+      - traefik.http.routers.glances.middlewares=glances@docker
+
   shellinabox:
     container_name: shellinabox
     image: sspreitzer/shellinabox:latest
