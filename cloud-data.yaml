@@ -55,25 +55,21 @@ services:
 
   seafile-db:
     container_name: seafile-db
-    image: mariadb
+    image: mariadb:10.1
     environment:
       MYSQL_ROOT_PASSWORD: ${SEAFILE_MYSQL_ROOT_PASSWORD}  # Requested, set the root's password of MySQL service.
       MYSQL_LOG_CONSOLE: ${SEAFILE_MYSQL_LOG_CONSOLE}
     volumes:
       - ./docker/seafile/db:/var/lib/mysql  # Requested, specifies the path to MySQL data persistent store.
     restart: always
-    labels:
-      - traefik.enable=false
   seafile-memcached:
     container_name: seafile-memcached
-    image: memcached
-    entrypoint: memcached -m 256
+    image: memcached:1.5.6
+    entrypoint: memcached -m 256    
     restart: always
-    labels:
-      - traefik.enable=false
   seafile:
-    container_name: seafile
     image: seafileltd/seafile-mc:latest
+    container_name: seafile
     volumes:
       - ./data/seafile/data:/shared   # Requested, specifies the path to Seafile data persistent store.
     environment:
@@ -106,6 +102,7 @@ services:
       MYSQL_DATABASE: ${FILERUN_DB_NAME}
     volumes:
       - /filerun/db:/var/lib/mysql
+    restart: always
   filerun:
     container_name: filerun
     image: afian/filerun
