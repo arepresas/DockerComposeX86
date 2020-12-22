@@ -1,0 +1,117 @@
+version: "3"
+services:
+  codimd_db:
+    container_name: codimd_db
+    image: linuxserver/mariadb
+    restart: always
+    volumes:
+      - ./docker/codimd/db/:/config
+    environment:
+      - MYSQL_ROOT_PASSWORD=${CODIMD_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${CODIMD_MYSQL_DATABASE}
+      - MYSQL_USER=${CODIMD_MYSQL_USER}
+      - MYSQL_PASSWORD=${CODIMD_MYSQL_PASSWORD}
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+  codimd:
+    container_name: codimd
+    image: linuxserver/codimd:latest
+    depends_on:
+      - codimd_db
+    volumes:
+      - ./docker/codimd/config:/config
+    environment:
+      - DB_HOST=codimd_db
+      - DB_USER=${CODIMD_MYSQL_USER}
+      - DB_PASS=${CODIMD_MYSQL_PASSWORD}
+      - DB_NAME=${CODIMD_MYSQL_DATABASE}
+      - DB_PORT=3306
+      - PGID=${PGID}
+      - PUID=${PUID}
+      - TZ=${TZ}
+    restart: always
+    labels:
+      - traefik.http.routers.codimd.rule=Host(`${CODIMD_HOST}`)
+      - traefik.http.routers.codimd.tls=true
+      - traefik.http.routers.codimd.tls.certresolver=myresolver
+      - traefik.http.middlewares.codimd.compress=true
+      - traefik.http.services.codimd.loadbalancer.server.port=3000
+      - traefik.http.routers.codimd.middlewares=codimd@docker
+
+  wekan-db:
+    image: quay.io/wekan/mongo:4.4.2-bionic
+    container_name: wekan-db
+    restart: always
+    command: mongod --logpath /dev/null --oplogSize 128 --quiet
+    expose:
+      - 27017
+    volumes:
+      - ./docker/wekan/db:/data/db
+      - ./docker/wekan/db-dump:/dump
+    labels:
+      - traefik.enable=false
+  wekan:
+    container_name: wekan
+    image: quay.io/wekan/wekan
+    environment:
+      MONGO_URL: mongodb://wekan-db:27017/wekan
+      ROOT_URL: ${WEKAN_ROOT_URL}  #   <=== using only at same laptop/desktop where Wekan is installed
+      MAIL_URL: ${WEKAN_MAIL_URL}
+      MAIL_FROM: ${WEKAN_MAIL_FROM}
+      WITH_API: 'true'
+      RICHER_CARD_COMMENT_EDITOR: 'true'
+      CARD_OPENED_WEBHOOK_ENABLED: 'false'
+      BIGEVENTS_PATTERN: 'NONE'
+      BROWSER_POLICY_ENABLED: 'true'
+    depends_on:
+      - wekan-db
+    restart: always
+    labels:
+      - traefik.http.routers.wekan.rule=Host(`${WEKAN_HOST}`)
+      - traefik.http.routers.wekan.tls=true
+      - traefik.http.routers.wekan.tls.certresolver=myresolver
+      - traefik.http.middlewares.wekan.compress=true
+      - traefik.http.services.wekan.loadbalancer.server.port=8080
+      - traefik.http.routers.wekan.middlewares=wekan@docker
+
+  calibre:
+    container_name: calibre
+    image: ghcr.io/linuxserver/calibre-web
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      DOCKER_MODS: linuxserver/calibre-web:calibre  # optional & x86-64 only Adds the ability to perform ebook conversion
+    volumes:
+      - ./docker/calibre/config:/config
+      - ${CALIBRE_BOOKS}:/books
+    restart: always
+    labels:
+      - traefik.http.routers.calibre.rule=Host(`${CALIBRE_HOST}`)
+      - traefik.http.routers.calibre.tls=true
+      - traefik.http.routers.calibre.tls.certresolver=myresolver
+      - traefik.http.middlewares.calibre.compress=true
+      - traefik.http.services.calibre.loadbalancer.server.port=8083
+      - traefik.http.routers.calibre.middlewares=calibre@docker
+
+  firefox:
+    container_name: firefox
+    image: jlesage/firefox
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    shm_size: 2gb
+    security_opt:
+        - seccomp:unconfined
+    volumes:
+      - ./docker/firefox/config:/config:rw
+    restart: always
+    labels:
+      - traefik.http.routers.firefox.rule=Host(`${FIREFOX_HOST}`)
+      - traefik.http.routers.firexox.tls=true
+      - traefik.http.routers.firefox.tls.certresolver=myresolver
+      - traefik.http.middlewares.firefox.compress=true
+      - traefik.http.services.firefox.loadbalancer.server.port=5800
+      - traefik.http.routers.firefox.middlewares=firefox@docker

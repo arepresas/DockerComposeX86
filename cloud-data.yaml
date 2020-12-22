@@ -1,5 +1,58 @@
 version: "3"
 services:
+  syncthing:
+    container_name: syncthing
+    image: linuxserver/syncthing
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: ${UMASK_SET}
+    volumes:
+      - ./docker/syncthing/config:/config
+      - ${EXT_DISK}:/DiscoExterno
+      - /usr/docker:/dockerConf
+      - ./data/SyncFolders:/SyncFolders
+    ports:
+      - 22000:22000/tcp
+      - 21027:21027/udp
+    restart: always
+    labels:
+      - traefik.http.routers.syncthing.rule=Host(`${SYNCTHING_HOST}`)
+      - traefik.http.routers.syncthing.tls=true
+      - traefik.http.routers.syncthing.tls.certresolver=myresolver
+      - traefik.http.middlewares.syncthing.compress=true
+      - traefik.http.routers.syncthing.middlewares=syncthing@docker
+
+  nextcloud-db:
+    container_name: mariadb
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - ./docker/mariadb:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${NEXTCLOUD_MYSQL_DATABASE}
+      MYSQL_USER: ${NEXTCLOUD_MYSQL_USER}
+    restart: always
+    labels:
+      - traefik.enable=false
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud
+    links:
+      - nextcloud-db
+    volumes:
+      - ./data/nextcloud/html:/var/www/html
+    restart: always
+    labels:
+      - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_HOST}`)
+      - traefik.http.routers.nextcloud.tls=true
+      - traefik.http.routers.nextcloud.tls.certresolver=myresolver
+      - traefik.http.middlewares.nextcloud.compress=true
+      - traefik.http.routers.nextcloud.middlewares=nextcloud@docker
+
   seafile-db:
     container_name: seafile-db
     image: mariadb
@@ -10,16 +63,14 @@ services:
       - ./docker/seafile/db:/var/lib/mysql  # Requested, specifies the path to MySQL data persistent store.
     restart: always
     labels:
-      - "traefik.enable=false"
-      
+      - traefik.enable=false
   seafile-memcached:
     container_name: seafile-memcached
     image: memcached
     entrypoint: memcached -m 256
     restart: always
     labels:
-      - "traefik.enable=false"
-                
+      - traefik.enable=false
   seafile:
     container_name: seafile
     image: seafileltd/seafile-mc:latest
@@ -42,5 +93,5 @@ services:
       - traefik.http.routers.seafile.tls=true
       - traefik.http.routers.seafile.tls.certresolver=myresolver
       - traefik.http.middlewares.seafile.compress=true
-      # - traefik.http.services.seafile.loadbalancer.server.port=80
+      - traefik.http.services.seafile.loadbalancer.server.port=80
       - traefik.http.routers.seafile.middlewares=seafile@docker

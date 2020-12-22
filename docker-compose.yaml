@@ -37,10 +37,6 @@ services:
       - traefik.http.services.traefik.loadbalancer.server.port=8080
       - traefik.http.routers.traefik.middlewares=traefik@docker
 
-#############################
-###   TRAEFIK OK          ###
-#############################
-
   heimdall:
     container_name: heimdall
     image: linuxserver/heimdall
@@ -75,27 +71,6 @@ services:
       - traefik.http.middlewares.portainer.compress=true
       - traefik.http.services.portainer.loadbalancer.server.port=9000
       - traefik.http.routers.portainer.middlewares=portainer@docker
-
-  firefox:
-    container_name: firefox
-    image: jlesage/firefox
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    shm_size: 2gb
-    security_opt:
-        - seccomp:unconfined
-    volumes:
-      - ./docker/firefox/config:/config:rw
-    restart: always
-    labels:
-      - traefik.http.routers.firefox.rule=Host(`${FIREFOX_HOST}`)
-      - traefik.http.routers.firexox.tls=true
-      - traefik.http.routers.firefox.tls.certresolver=myresolver
-      - traefik.http.middlewares.firefox.compress=true
-      - traefik.http.services.firefox.loadbalancer.server.port=5800
-      - traefik.http.routers.firefox.middlewares=firefox@docker
 
   homeassistant:
     container_name: homeassistant
@@ -144,30 +119,6 @@ services:
       - traefik.http.services.pihole.loadbalancer.server.port=80
       - traefik.http.routers.pihole.middlewares=pihole@docker
 
-  syncthing:
-    container_name: syncthing
-    image: linuxserver/syncthing
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      UMASK_SET: ${UMASK_SET}
-    volumes:
-      - ./docker/syncthing/config:/config
-      - ${EXT_DISK}:/DiscoExterno
-      - /usr/docker:/dockerConf
-      - ./data/SyncFolders:/SyncFolders
-    ports:
-      - 22000:22000/tcp
-      - 21027:21027/udp
-    restart: always
-    labels:
-      - traefik.http.routers.syncthing.rule=Host(`${SYNCTHING_HOST}`)
-      - traefik.http.routers.syncthing.tls=true
-      - traefik.http.routers.syncthing.tls.certresolver=myresolver
-      - traefik.http.middlewares.syncthing.compress=true
-      - traefik.http.routers.syncthing.middlewares=syncthing@docker
-
   cloudcommander:
     container_name: cloudcommander
     image: coderaiser/cloudcmd
@@ -190,8 +141,6 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    # ports:
-    #   - 19999:19999/tcp
     cap_add:
       - SYS_PTRACE
     security_opt:
@@ -220,10 +169,6 @@ services:
       - traefik.http.middlewares.shellinabox.compress=true
       - traefik.http.services.shellinabox.loadbalancer.server.port=4200
       - traefik.http.routers.shellinabox.middlewares=shellinabox@docker
-            
-###########################
-###   NO TRAEFIK        ###
-###########################
 
   watchtower:
     container_name: watchtower
@@ -280,7 +225,7 @@ services:
       - ./docker/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
     restart: always
     labels:
-      - "traefik.enable=false"
+      - traefik.enable=false
 
   ovh-dns:
     container_name: ovh-dns
