@@ -11,7 +11,6 @@ services:
       VERSION: docker
       PLEX_CLAIM: ${PLEX_CLAIM}
       ADVERTISE_IP: ${PLEX_ADVERTISE_IP}
-
     devices:
       - /dev/dri:/dev/dri
     volumes:
@@ -46,7 +45,7 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      UMASK_SET: ${UMASK_SET} #optional
+      UMASK: ${UMASK_SET} #optional
     volumes:     
       - ./data/jellyfin/library:/config
       - /opt/vc/lib:/opt/vc/lib #optional
@@ -59,8 +58,8 @@ services:
       - 1901:1900/udp #optional
     devices:
       - /dev/dri:/dev/dri #optional
-      - /dev/video0:/dev/video0 #optional
-      - /dev/video1:/dev/video1 #optional
+      # - /dev/video0:/dev/video0 #optional
+      # - /dev/video1:/dev/video1 #optional
     restart: always
     labels:
       - traefik.http.routers.jellyfin.rule=Host(`${JELLYFIN_HOST}`)

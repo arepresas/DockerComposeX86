@@ -104,7 +104,7 @@ services:
       TZ: ${TZ}
     shm_size: 2gb
     security_opt:
-        - seccomp:unconfined
+      - seccomp:unconfined
     volumes:
       - ./docker/firefox/config:/config:rw
     restart: always

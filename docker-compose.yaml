@@ -162,7 +162,7 @@ services:
       - traefik.http.routers.openspeedtest.tls=true
       - traefik.http.routers.openspeedtest.tls.certresolver=myresolver
       - traefik.http.middlewares.openspeedtest.compress=true
-      - traefik.http.services.pihole.loadbalancer.server.port=8080
+      - traefik.http.services.openspeedtest.loadbalancer.server.port=8080
       - traefik.http.routers.openspeedtest.middlewares=openspeedtest@docker
 
   glances:

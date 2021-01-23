@@ -25,11 +25,11 @@ services:
       - traefik.http.routers.syncthing.middlewares=syncthing@docker
 
   nextcloud-db:
-    container_name: mariadb
+    container_name: nextcloud-db
     image: mariadb
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
-      - ./docker/mariadb:/var/lib/mysql
+      - ./docker/nextcloud-db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
       MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
@@ -55,14 +55,14 @@ services:
 
   filerun_db:
     container_name: filerun_db
-    image: mariadb
+    image: mariadb:10.1
     environment:
       MYSQL_ROOT_PASSWORD: ${FILERUN_DB_ROOT_PASS}
       MYSQL_USER: ${FILERUN_DB_USER}
       MYSQL_PASSWORD: ${FILERUN_DB_PASS}
       MYSQL_DATABASE: ${FILERUN_DB_NAME}
     volumes:
-      - /filerun/db:/var/lib/mysql
+      - ./docker/filerun-db:/var/lib/mysql
     restart: always
   filerun:
     container_name: filerun
@@ -80,8 +80,8 @@ services:
     depends_on:
       - filerun_db
     volumes:
-      - ./docker/filerun/html:/var/www/html
-      - ./docker/filerun/user-files:/user-files
+      - ./data/filerun/html:/var/www/html
+      - ./data/filerun/user-files:/user-files
     restart: always
     labels:
       - traefik.http.routers.filerun.rule=Host(`${FILERUN_HOST}`)
