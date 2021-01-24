@@ -1,38 +1,38 @@
 version: "3"
 services:
-  codimd_db:
-    container_name: codimd_db
-    image: linuxserver/mariadb
+  hedgedoc_db:
+    container_name: hedgedoc_db
+    image: ghcr.io/linuxserver/mariadb:latest
     restart: always
     volumes:
-      - ./docker/codimd/db/:/config
+      - ./docker/hedgedoc/db/:/config
     environment:
-      - MYSQL_ROOT_PASSWORD=${CODIMD_MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${CODIMD_MYSQL_DATABASE}
-      - MYSQL_USER=${CODIMD_MYSQL_USER}
-      - MYSQL_PASSWORD=${CODIMD_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${HEDGEDOC_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${HEDGEDOC_MYSQL_DATABASE}
+      - MYSQL_USER=${HEDGEDOC_MYSQL_USER}
+      - MYSQL_PASSWORD=${HEDGEDOC_MYSQL_PASSWORD}
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
-  codimd:
-    container_name: codimd
-    image: linuxserver/codimd:latest
+  hedgedoc:
+    container_name: hedgedoc
+    image: ghcr.io/linuxserver/hedgedoc:latest
     depends_on:
-      - codimd_db
+      - hedgedoc_db
     volumes:
-      - ./docker/codimd/config:/config
+      - ./docker/hedgedoc/config:/config
     environment:
-      - DB_HOST=codimd_db
-      - DB_USER=${CODIMD_MYSQL_USER}
-      - DB_PASS=${CODIMD_MYSQL_PASSWORD}
-      - DB_NAME=${CODIMD_MYSQL_DATABASE}
+      - DB_HOST=hedgedoc_db
+      - DB_USER=${HEDGEDOC_MYSQL_USER}
+      - DB_PASS=${HEDGEDOC_MYSQL_PASSWORD}
+      - DB_NAME=${HEDGEDOC_MYSQL_DATABASE}
       - DB_PORT=3306
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
     restart: always
     labels:
-      - traefik.http.routers.codimd.rule=Host(`${CODIMD_HOST}`)
+      - traefik.http.routers.codimd.rule=Host(`${HEDGEDOC_HOST}`)
       - traefik.http.routers.codimd.tls=true
       - traefik.http.routers.codimd.tls.certresolver=myresolver
       - traefik.http.middlewares.codimd.compress=true
