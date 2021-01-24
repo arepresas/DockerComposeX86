@@ -76,23 +76,29 @@ services:
       - traefik.http.routers.wekan.middlewares=wekan@docker
 
   calibre:
+    image: ghcr.io/linuxserver/calibre
     container_name: calibre
-    image: ghcr.io/linuxserver/calibre-web
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      DOCKER_MODS: linuxserver/calibre-web:calibre  # optional & x86-64 only Adds the ability to perform ebook conversion
+      # GUAC_USER: ${CALIBRE_USER} #optional
+      # GUAC_PASS: ${CALIBRE_PASS} #optional
+      UMASK_SET: ${UMASK_SET}
+      # CLI_ARGS: #optional
     volumes:
-      - ./docker/calibre/config:/config
+      - ./docker/calibre/data:/config
       - ${CALIBRE_BOOKS}:/books
-    restart: always
+      - ${CALIBRE_LIBRARY}:/library # Must be an empty folder or and old Calibre library
+    ports:
+      - 8080:8080 # Calibre Gui port
+    restart: unless-stopped
     labels:
       - traefik.http.routers.calibre.rule=Host(`${CALIBRE_HOST}`)
       - traefik.http.routers.calibre.tls=true
       - traefik.http.routers.calibre.tls.certresolver=myresolver
       - traefik.http.middlewares.calibre.compress=true
-      - traefik.http.services.calibre.loadbalancer.server.port=8083
+      - traefik.http.services.calibre.loadbalancer.server.port=8081
       - traefik.http.routers.calibre.middlewares=calibre@docker
 
   firefox:
