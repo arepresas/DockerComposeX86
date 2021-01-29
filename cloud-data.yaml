@@ -12,7 +12,7 @@ services:
       - ./docker/syncthing/config:/config
       - ${EXT_DISK}:/DiscoExterno
       - /usr/docker:/dockerConf
-      - ./data/SyncFolders:/SyncFolders
+      - ${DATA_FOLDER}/SyncFolders:/SyncFolders
     ports:
       - 22000:22000/tcp
       - 21027:21027/udp
@@ -24,12 +24,12 @@ services:
       - traefik.http.middlewares.syncthing.compress=true
       - traefik.http.routers.syncthing.middlewares=syncthing@docker
 
-  nextcloud-db:
-    container_name: nextcloud-db
+  nextcloud_db:
+    container_name: nextcloud_db
     image: mariadb
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
-      - ./docker/nextcloud-db:/var/lib/mysql
+      - ./docker/nextcloud_db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
       MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
@@ -42,9 +42,9 @@ services:
     container_name: nextcloud
     image: nextcloud
     links:
-      - nextcloud-db
+      - nextcloud_db
     volumes:
-      - ./data/nextcloud/html:/var/www/html
+      - ${DATA_FOLDER}/nextcloud/html:/var/www/html
     restart: always
     labels:
       - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_HOST}`)
@@ -62,7 +62,7 @@ services:
       MYSQL_PASSWORD: ${FILERUN_DB_PASS}
       MYSQL_DATABASE: ${FILERUN_DB_NAME}
     volumes:
-      - ./docker/filerun-db:/var/lib/mysql
+      - ./docker/filerun_db:/var/lib/mysql
     restart: always
   filerun:
     container_name: filerun
@@ -80,8 +80,8 @@ services:
     depends_on:
       - filerun_db
     volumes:
-      - ./data/filerun/html:/var/www/html
-      - ./data/filerun/user-files:/user-files
+      - ${DATA_FOLDER}/filerun/html:/var/www/html
+      - ${DATA_FOLDER}/filerun/user-files:/user-files
     restart: always
     labels:
       - traefik.http.routers.filerun.rule=Host(`${FILERUN_HOST}`)

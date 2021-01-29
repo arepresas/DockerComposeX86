@@ -39,9 +39,9 @@ services:
       - traefik.http.services.codimd.loadbalancer.server.port=3000
       - traefik.http.routers.codimd.middlewares=codimd@docker
 
-  wekan-db:
+  wekan_db:
     image: quay.io/wekan/mongo:4.4.2-bionic
-    container_name: wekan-db
+    container_name: wekan_db
     restart: always
     command: mongod --logpath /dev/null --oplogSize 128 --quiet
     expose:
@@ -55,7 +55,7 @@ services:
     container_name: wekan
     image: quay.io/wekan/wekan
     environment:
-      MONGO_URL: mongodb://wekan-db:27017/wekan
+      MONGO_URL: mongodb://wekan_db:27017/wekan
       ROOT_URL: ${WEKAN_ROOT_URL}  #   <=== using only at same laptop/desktop where Wekan is installed
       MAIL_URL: ${WEKAN_MAIL_URL}
       MAIL_FROM: ${WEKAN_MAIL_FROM}
@@ -65,7 +65,7 @@ services:
       BIGEVENTS_PATTERN: 'NONE'
       BROWSER_POLICY_ENABLED: 'true'
     depends_on:
-      - wekan-db
+      - wekan_db
     restart: always
     labels:
       - traefik.http.routers.wekan.rule=Host(`${WEKAN_HOST}`)

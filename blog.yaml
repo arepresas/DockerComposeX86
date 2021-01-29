@@ -1,0 +1,40 @@
+version: "3"
+services:
+  wordpress_db:
+    container_name: wordpress_db
+    image: 'docker.io/bitnami/mariadb:10.3-debian-10'
+    user: root
+    volumes:
+      - ./docker/wordpress/db:/bitnami/mariadb
+    environment:
+      - MARIADB_USER=${WORDPRESS_MYSQL_USER}
+      - MARIADB_DATABASE=${WORDPRESS_MYSQL_DATABASE}
+      - MARIADB_PASSWORD=${WORDPRESS_MYSQL_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${WORDPRESS_MYSQL_ROOT_PASSWORD}
+  wordpress:
+    container_name: wordpress
+    image: 'docker.io/bitnami/wordpress:5-debian-10'
+    user: root
+    environment:
+      - MARIADB_HOST=wordpress_db
+      - MARIADB_PORT_NUMBER=3306
+      - WORDPRESS_DATABASE_USER=${WORDPRESS_MYSQL_USER}
+      - WORDPRESS_DATABASE_NAME=${WORDPRESS_MYSQL_DATABASE}
+      - WORDPRESS_DATABASE_PASSWORD=${WORDPRESS_MYSQL_PASSWORD}
+      - WORDPRESS_USERNAME=${WORDPRESS_USERNAME} # WordPress application username.
+      - WORDPRESS_PASSWORD=${WORDPRESS_PASSWORD} # WordPress application password.
+      - WORDPRESS_EMAIL=${WORDPRESS_EMAIL} # WordPress application email.
+      - WORDPRESS_FIRST_NAME=${WORDPRESS_FIRST_NAME} # WordPress user first name.
+      - WORDPRESS_LAST_NAME=${WORDPRESS_LAST_NAME} # WordPress user last name.
+      - WORDPRESS_BLOG_NAME=${WORDPRESS_BLOG_NAME} # WordPress blog name.
+    volumes:
+      - ./docker/wordpress/data:/bitnami/wordpress
+    depends_on:
+      - wordpress_db
+    labels:
+      - traefik.http.routers.wordpress.rule=Host(`${WORDPRESS_HOST}`)
+      - traefik.http.routers.wordpress.tls=true
+      - traefik.http.routers.wordpress.tls.certresolver=myresolver
+      - traefik.http.middlewares.wordpress.compress=true
+      - traefik.http.services.wordpress.loadbalancer.server.port=8080
+      - traefik.http.routers.wordpress.middlewares=wordpress@docker

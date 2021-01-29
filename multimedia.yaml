@@ -14,7 +14,7 @@ services:
     devices:
       - /dev/dri:/dev/dri
     volumes:
-      - ./data/plex/library:/config
+      - ${DATA_FOLDER}/plex/library:/config
       - ${TV_SERIES_DIR}:/tv
       - ${MOVIES_DIR}:/movies
     hostname: ${PLEX_HOST}
@@ -47,7 +47,7 @@ services:
       TZ: ${TZ}
       UMASK: ${UMASK_SET} #optional
     volumes:     
-      - ./data/jellyfin/library:/config
+      - ${DATA_FOLDER}/jellyfin/library:/config
       - /opt/vc/lib:/opt/vc/lib #optional
       - ${TV_SERIES_DIR}:/data/tvshows
       - ${MOVIES_DIR}:/data/movies
