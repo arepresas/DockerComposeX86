@@ -9,7 +9,7 @@ services:
       TZ: ${TZ}
       UMASK_SET: ${UMASK_SET}
     volumes:
-      - ./docker/syncthing/config:/config
+      - ${CONF_FOLDER}/syncthing/config:/config
       - ${EXT_DISK}:/DiscoExterno
       - /usr/docker:/dockerConf
       - ${DATA_FOLDER}/SyncFolders:/SyncFolders
@@ -29,7 +29,7 @@ services:
     image: mariadb
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
-      - ./docker/nextcloud_db:/var/lib/mysql
+      - ${CONF_FOLDER}/nextcloud_db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
       MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
@@ -62,7 +62,7 @@ services:
       MYSQL_PASSWORD: ${FILERUN_DB_PASS}
       MYSQL_DATABASE: ${FILERUN_DB_NAME}
     volumes:
-      - ./docker/filerun_db:/var/lib/mysql
+      - ${CONF_FOLDER}/filerun_db:/var/lib/mysql
     restart: always
   filerun:
     container_name: filerun
@@ -98,7 +98,7 @@ services:
       - ONEDRIVE_UID=${PUID}
       - ONEDRIVE_GID=${PGID}
     volumes:
-      - ./docker/onedrive:/onedrive/conf
+      - ${CONF_FOLDER}/onedrive:/onedrive/conf
       - ${DATA_FOLDER}/onedrive:/onedrive/data
     restart: always
     labels:

@@ -19,7 +19,7 @@ services:
       - 80:80/tcp
       - 443:443/tcp
     volumes:
-      - ./docker/traefik/letsencrypt:/letsencrypt
+      - ${CONF_FOLDER}/traefik/letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: always
     labels:    
@@ -45,7 +45,7 @@ services:
       PGID: ${PGID}
       TZ: ${TZ}
     volumes:
-      - ./docker/heimdall/config:/config
+      - ${CONF_FOLDER}/heimdall/config:/config
     restart: always
     labels:
       - traefik.http.routers.heimdall.rule=Host(`${HEIMDAL_HOST}`)
@@ -60,7 +60,7 @@ services:
     command: -H unix:///var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/portainer/data:/data
+      - ${CONF_FOLDER}/portainer/data:/data
     # ports:
     #   - 8000:8000/tcp
     restart: always
@@ -78,7 +78,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-        - ./docker/home-assistant/config:/config
+        - ${CONF_FOLDER}/home-assistant/config:/config
     # devices:
     #   - /dev/ttyUSB0:/dev/ttyUSB0
     restart: always
@@ -99,8 +99,8 @@ services:
       ServerIp: ${PIHOLE_IP}
       IPv6: 'false'
     volumes:
-       - ./docker/pihole/etc:/etc/pihole
-       - ./docker/pihole/dnsmasq.d:/etc/dnsmasq.d
+       - ${CONF_FOLDER}/pihole/etc:/etc/pihole
+       - ${CONF_FOLDER}/pihole/dnsmasq.d:/etc/dnsmasq.d
     ports:
       - 53:53/tcp
       - 53:53/udp
@@ -250,7 +250,7 @@ services:
       PGID: ${PGID}
       TZ: ${TZ}
     volumes:
-      - ./docker/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
+      - ${CONF_FOLDER}/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
     restart: always
     labels:
       - traefik.enable=false
@@ -263,7 +263,7 @@ services:
       PGID: ${PGID}
       TZ: ${TZ}
     volumes:
-      - ./docker/ovh-dns/config:/config
+      - ${CONF_FOLDER}/ovh-dns/config:/config
     restart: always
     labels:
       - traefik.enable=false

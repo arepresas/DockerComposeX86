@@ -9,10 +9,10 @@ services:
       - PGID=${PGID}
       - GITURL=${ICECODER_GITREPO} # GitHub Repository to clone during container creation
     volumes:
-      - ./docker/icecoder/plugins:/plugins # Contains all installed plugins.
-      - ./docker/icecoder/data:/data # Contains ICEcoder data like backups.
-      - ./docker/icecoder/config:/config # Contains config files and logs.
-      - ./docker/icecoder/code:/code # Contains GITURL repository.
+      - ${CONF_FOLDER}/icecoder/plugins:/plugins # Contains all installed plugins.
+      - ${CONF_FOLDER}/icecoder/data:/data # Contains ICEcoder data like backups.
+      - ${CONF_FOLDER}/icecoder/config:/config # Contains config files and logs.
+      - ${CONF_FOLDER}/icecoder/code:/code # Contains GITURL repository.
     restart: always
     labels:
       - traefik.http.routers.icecoder.rule=Host(`${ICECODER_HOST}`)
@@ -54,7 +54,7 @@ services:
       - SUDO_PASSWORD=${CODESERVER_SUDO_PASS} #optional
       - PROXY_DOMAIN=${CODESERVER_PROXY_DOMAIN} #optional
     volumes:
-      - ./docker/code-server:/config
+      - ${CONF_FOLDER}/code-server:/config
     restart: always
     labels:
       - traefik.http.routers.code-server.rule=Host(`${CODESERVER_HOST}`)

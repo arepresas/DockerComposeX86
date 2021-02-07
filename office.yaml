@@ -5,7 +5,7 @@ services:
     image: ghcr.io/linuxserver/mariadb:latest
     restart: always
     volumes:
-      - ./docker/hedgedoc/db/:/config
+      - ${CONF_FOLDER}/hedgedoc/db/:/config
     environment:
       - MYSQL_ROOT_PASSWORD=${HEDGEDOC_MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${HEDGEDOC_MYSQL_DATABASE}
@@ -20,7 +20,7 @@ services:
     depends_on:
       - hedgedoc_db
     volumes:
-      - ./docker/hedgedoc/config:/config
+      - ${CONF_FOLDER}/hedgedoc/config:/config
     environment:
       - DB_HOST=hedgedoc_db
       - DB_USER=${HEDGEDOC_MYSQL_USER}
@@ -47,8 +47,8 @@ services:
     expose:
       - 27017
     volumes:
-      - ./docker/wekan/db:/data/db
-      - ./docker/wekan/db-dump:/dump
+      - ${CONF_FOLDER}/wekan/db:/data/db
+      - ${CONF_FOLDER}/wekan/db-dump:/dump
     labels:
       - traefik.enable=false
   wekan:
@@ -87,7 +87,7 @@ services:
       UMASK_SET: ${UMASK_SET}
       # CLI_ARGS: #optional
     volumes:
-      - ./docker/calibre/data:/config
+      - ${CONF_FOLDER}/calibre/data:/config
       - ${CALIBRE_BOOKS}:/books
       - ${CALIBRE_LIBRARY}:/library # Must be an empty folder or and old Calibre library
     ports:
@@ -112,7 +112,7 @@ services:
     security_opt:
       - seccomp:unconfined
     volumes:
-      - ./docker/firefox/config:/config:rw
+      - ${CONF_FOLDER}/firefox/config:/config:rw
     restart: always
     labels:
       - traefik.http.routers.firefox.rule=Host(`${FIREFOX_HOST}`)

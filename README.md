@@ -11,3 +11,14 @@ To launch docker-compose with many files :
 To auto restart docker containers after shutdown:
 
 - systemctl enable --now docker.service
+
+To change Docker Root Dir:
+
+- systemctl stop docker
+- mv /var/lib/docker /destination-folder
+- ln -s /destination-folder /var/lib/docker
+- systemctl start docker
+
+Fix inotify:
+
+- sudo sysctl fs.inotify.max_user_watches=524288

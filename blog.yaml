@@ -5,7 +5,7 @@ services:
     image: 'docker.io/bitnami/mariadb:10.3-debian-10'
     user: root
     volumes:
-      - ./docker/wordpress/db:/bitnami/mariadb
+      - ${CONF_FOLDER}/wordpress/db:/bitnami/mariadb
     environment:
       - MARIADB_USER=${WORDPRESS_MYSQL_USER}
       - MARIADB_DATABASE=${WORDPRESS_MYSQL_DATABASE}
@@ -28,7 +28,7 @@ services:
       - WORDPRESS_LAST_NAME=${WORDPRESS_LAST_NAME} # WordPress user last name.
       - WORDPRESS_BLOG_NAME=${WORDPRESS_BLOG_NAME} # WordPress blog name.
     volumes:
-      - ./docker/wordpress/data:/bitnami/wordpress
+      - ${CONF_FOLDER}/wordpress/data:/bitnami/wordpress
     depends_on:
       - wordpress_db
     labels:
