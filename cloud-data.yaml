@@ -90,3 +90,16 @@ services:
       - traefik.http.middlewares.filerun.compress=true
       - traefik.http.services.filerun.loadbalancer.server.port=80
       - traefik.http.routers.filerun.middlewares=filerun@docker
+
+  onedrive:
+    container_name: onedrive
+    image: driveone/onedrive:latest
+    environment:
+      - ONEDRIVE_UID=${PUID}
+      - ONEDRIVE_GID=${PGID}
+    volumes:
+      - ./docker/onedrive:/onedrive/conf
+      - ${DATA_FOLDER}/onedrive:/onedrive/data
+    restart: always
+    labels:
+      - traefik.enable=false
