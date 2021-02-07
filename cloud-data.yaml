@@ -103,3 +103,15 @@ services:
     restart: always
     labels:
       - traefik.enable=false
+
+  dropbox:
+    container_name: dropbox
+    image: vmirage/dropbox
+    environment:
+      - DBOX_UID=${PUID}
+      - DBOX_GID=${PGID}
+    volumes:
+      - ${DATA_FOLDER}/dropbox:/dbox/Dropbox
+    restart: always
+    labels:
+      - traefik.enable=false
