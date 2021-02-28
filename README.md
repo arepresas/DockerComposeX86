@@ -4,7 +4,7 @@ Docker-Compose server files for a X86 home server.
 # Launch services
 To launch docker-compose with many files :
 
-- sudo docker-compose -f docker-compose.yaml -f multimedia.yaml -f cloud-data.yaml -f office.yaml -f code.yaml -f blog.yaml up -d --remove-orphans
+- sudo docker-compose -f docker-compose.yaml -f multimedia.yaml -f cloud-data.yaml -f office.yaml -f code.yaml -f blog.yaml -f iot.yaml up -d --remove-orphans
 
 # Onedrive
 First you have to launch the docker in interactive mode and login:

@@ -72,24 +72,6 @@ services:
       - traefik.http.services.portainer.loadbalancer.server.port=9000
       - traefik.http.routers.portainer.middlewares=portainer@docker
 
-  homeassistant:
-    container_name: homeassistant
-    image: homeassistant/home-assistant:stable
-    environment:
-      TZ: ${TZ}
-    volumes:
-        - ${CONF_FOLDER}/home-assistant/config:/config
-    # devices:
-    #   - /dev/ttyUSB0:/dev/ttyUSB0
-    restart: always
-    labels:
-      - traefik.http.routers.homeassistant.rule=Host(`${HOMEASSISTANT_HOST}`)
-      - traefik.http.routers.homeassistant.tls=true
-      - traefik.http.routers.homeassistant.tls.certresolver=myresolver
-      - traefik.http.middlewares.homeassistant.compress=true
-      - traefik.http.services.homeassistant.loadbalancer.server.port=8123
-      - traefik.http.routers.homeassistant.middlewares=homeassistant@docker
-
   pihole:
     container_name: pihole
     image: pihole/pihole:latest

@@ -12,7 +12,7 @@ services:
       PLEX_CLAIM: ${PLEX_CLAIM}
       ADVERTISE_IP: ${PLEX_ADVERTISE_IP}
     devices:
-      - /dev/dri:/dev/dri
+      # - /dev/dri:/dev/dri #optional
     volumes:
       - ${DATA_FOLDER}/plex/library:/config
       - ${TV_SERIES_DIR}:/tv
@@ -57,7 +57,7 @@ services:
       - 7359:7359/udp #optional
       - 1901:1900/udp #optional
     devices:
-      - /dev/dri:/dev/dri #optional
+      # - /dev/dri:/dev/dri #optional
       # - /dev/video0:/dev/video0 #optional
       # - /dev/video1:/dev/video1 #optional
     restart: always
