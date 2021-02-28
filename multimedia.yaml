@@ -48,7 +48,7 @@ services:
       UMASK: ${UMASK_SET} #optional
     volumes:     
       - ${DATA_FOLDER}/jellyfin/library:/config
-      - /opt/vc/lib:/opt/vc/lib #optional
+      # - /opt/vc/lib:/opt/vc/lib #optional
       - ${TV_SERIES_DIR}:/data/tvshows
       - ${MOVIES_DIR}:/data/movies
     ports:

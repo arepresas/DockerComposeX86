@@ -228,7 +228,7 @@ services:
     tty: true
     read_only: false
     volumes:
-      - ${EXT_DISK}:/mnt
+      - ${ALMACEN}:/Smb
     ports:
       - 137:137/udp
       - 138:138/udp

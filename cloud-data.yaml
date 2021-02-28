@@ -10,8 +10,7 @@ services:
       UMASK_SET: ${UMASK_SET}
     volumes:
       - ${CONF_FOLDER}/syncthing/config:/config
-      - ${EXT_DISK}:/DiscoExterno
-      - /usr/docker:/dockerConf
+      - ${ALMACEN}:/Almacen
       - ${DATA_FOLDER}/SyncFolders:/SyncFolders
     ports:
       - 22000:22000/tcp
