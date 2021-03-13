@@ -10,7 +10,7 @@ services:
       UMASK_SET: ${UMASK_SET}
     volumes:
       - ${CONF_FOLDER}/syncthing/config:/config
-      - ${ALMACEN}:/Almacen
+      - ${STORAGE}:/Almacen
       - ${DATA_FOLDER}/SyncFolders:/SyncFolders
     ports:
       - 22000:22000/tcp
@@ -99,6 +99,7 @@ services:
     volumes:
       - ${CONF_FOLDER}/onedrive:/onedrive/conf
       - ${DATA_FOLDER}/onedrive:/onedrive/data
+      - ${STORAGE}:/onedrive/data/serverSave:ro
     restart: always
     labels:
       - traefik.enable=false

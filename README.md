@@ -41,3 +41,12 @@ To change Docker Root Dir:
 Fix inotify:
 
 - sudo sysctl fs.inotify.max_user_watches=524288
+
+# Proxmox
+
+If you want to use this docker-compose in Proxmox is recommended to add Conf and Data folders as **Bind mount points**
+
+https://pve.proxmox.com/wiki/Linux_Container#_bind_mount_points
+
+- The user in host will be **GuestUser + 100000**
+

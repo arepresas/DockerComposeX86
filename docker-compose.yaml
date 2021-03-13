@@ -210,7 +210,7 @@ services:
     tty: true
     read_only: false
     volumes:
-      - ${ALMACEN}:/Smb
+      - ${STORAGE}:/Smb
     ports:
       - 137:137/udp
       - 138:138/udp
