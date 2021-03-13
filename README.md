@@ -24,6 +24,18 @@ You should see something like this:
 
     "This computer is now linked to Dropbox. Welcome xxxx"
 
+# Jobber
+
+To add jobs, you must add a file **.jobber** in jobber folder like this example
+
+```
+[jobs]
+- name: BackupServer
+  cmd: backup.sh
+  time: '0 0 5 * * *'
+```
+
+It will execute script **backup.sh** everyday at 5am
 
 # Utils
 
@@ -41,6 +53,10 @@ To change Docker Root Dir:
 Fix inotify:
 
 - sudo sysctl fs.inotify.max_user_watches=524288
+
+Delete logs of all containers:
+
+- sudo sh -c "truncate -s 0 /var/lib/docker/containers/*/*-json.log"
 
 # Proxmox
 

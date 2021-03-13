@@ -100,6 +100,7 @@ services:
       - ${CONF_FOLDER}/onedrive:/onedrive/conf
       - ${DATA_FOLDER}/onedrive:/onedrive/data
       - ${STORAGE}:/onedrive/data/serverSave:ro
+      - ${DATA_FOLDER}/dropbox/:/onedrive/data/dropboxSave:ro
     restart: always
     labels:
       - traefik.enable=false
