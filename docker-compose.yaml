@@ -224,32 +224,6 @@ services:
     labels:
       - traefik.enable=false
 
-  no-ip:
-    container_name: no-ip
-    image: romeupalos/noip
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${CONF_FOLDER}/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
-    restart: unless-stopped
-    labels:
-      - traefik.enable=false
-
-  ovh-dns:
-    container_name: ovh-dns
-    image: linuxserver/ddclient
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${CONF_FOLDER}/ovh-dns/config:/config
-    restart: unless-stopped
-    labels:
-      - traefik.enable=false
-
   jobber:
     container_name: jobber
     image: jobber
