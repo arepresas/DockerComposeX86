@@ -6,6 +6,12 @@ To launch docker-compose with many files :
 
 - sudo docker-compose -f docker-compose.yaml -f multimedia.yaml -f cloud-data.yaml -f office.yaml -f code.yaml -f blog.yaml -f iot.yaml up -d --remove-orphans
 
+# Traefik
+
+File acme.json must have 600 permissions
+
+- chmod 600 /var/acme.json
+
 # Onedrive
 First you have to launch the docker in interactive mode and login:
 

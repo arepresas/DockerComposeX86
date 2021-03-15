@@ -3,7 +3,7 @@ services:
   hedgedoc_db:
     container_name: hedgedoc_db
     image: ghcr.io/linuxserver/mariadb:latest
-    restart: always
+    restart: unless-stopped
     volumes:
       - ${CONF_FOLDER}/hedgedoc/db/:/config
     environment:
@@ -30,7 +30,7 @@ services:
       - PGID=${PGID}
       - PUID=${PUID}
       - TZ=${TZ}
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.codimd.rule=Host(`${HEDGEDOC_HOST}`)
       - traefik.http.routers.codimd.tls=true
@@ -42,7 +42,7 @@ services:
   wekan_db:
     image: quay.io/wekan/mongo:4.4.2-bionic
     container_name: wekan_db
-    restart: always
+    restart: unless-stopped
     command: mongod --logpath /dev/null --oplogSize 128 --quiet
     expose:
       - 27017
@@ -66,7 +66,7 @@ services:
       BROWSER_POLICY_ENABLED: 'true'
     depends_on:
       - wekan_db
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.wekan.rule=Host(`${WEKAN_HOST}`)
       - traefik.http.routers.wekan.tls=true
@@ -113,7 +113,7 @@ services:
       - seccomp:unconfined
     volumes:
       - ${CONF_FOLDER}/firefox/config:/config:rw
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.firefox.rule=Host(`${FIREFOX_HOST}`)
       - traefik.http.routers.firexox.tls=true

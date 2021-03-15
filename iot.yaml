@@ -9,7 +9,7 @@ services:
       - ${CONF_FOLDER}/home-assistant/config:/config
     # devices:
     #   - /dev/ttyUSB0:/dev/ttyUSB0
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.homeassistant.rule=Host(`${HOMEASSISTANT_HOST}`)
       - traefik.http.routers.homeassistant.tls=true

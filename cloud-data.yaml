@@ -15,7 +15,7 @@ services:
     ports:
       - 22000:22000/tcp
       - 21027:21027/udp
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.syncthing.rule=Host(`${SYNCTHING_HOST}`)
       - traefik.http.routers.syncthing.tls=true
@@ -23,34 +23,34 @@ services:
       - traefik.http.middlewares.syncthing.compress=true
       - traefik.http.routers.syncthing.middlewares=syncthing@docker
 
-  nextcloud_db:
-    container_name: nextcloud_db
-    image: mariadb
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
-    volumes:
-      - ${CONF_FOLDER}/nextcloud_db:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
-      MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
-      MYSQL_DATABASE: ${NEXTCLOUD_MYSQL_DATABASE}
-      MYSQL_USER: ${NEXTCLOUD_MYSQL_USER}
-    restart: always
-    labels:
-      - traefik.enable=false
-  nextcloud:
-    container_name: nextcloud
-    image: nextcloud
-    links:
-      - nextcloud_db
-    volumes:
-      - ${DATA_FOLDER}/nextcloud/html:/var/www/html
-    restart: always
-    labels:
-      - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_HOST}`)
-      - traefik.http.routers.nextcloud.tls=true
-      - traefik.http.routers.nextcloud.tls.certresolver=myresolver
-      - traefik.http.middlewares.nextcloud.compress=true
-      - traefik.http.routers.nextcloud.middlewares=nextcloud@docker
+#  nextcloud_db:
+#    container_name: nextcloud_db
+#    image: mariadb
+#    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+#    volumes:
+#      - ${CONF_FOLDER}/nextcloud_db:/var/lib/mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
+#      MYSQL_PASSWORD: ${NEXTCLOUD_MYSQL_PASSWORD}
+#      MYSQL_DATABASE: ${NEXTCLOUD_MYSQL_DATABASE}
+#      MYSQL_USER: ${NEXTCLOUD_MYSQL_USER}
+#    restart: unless-stopped
+#    labels:
+#      - traefik.enable=false
+#  nextcloud:
+#    container_name: nextcloud
+#    image: nextcloud
+#    links:
+#      - nextcloud_db
+#    volumes:
+#      - ${DATA_FOLDER}/nextcloud/html:/var/www/html
+#    restart: unless-stopped
+#    labels:
+#      - traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_HOST}`)
+#      - traefik.http.routers.nextcloud.tls=true
+#      - traefik.http.routers.nextcloud.tls.certresolver=myresolver
+#      - traefik.http.middlewares.nextcloud.compress=true
+#      - traefik.http.routers.nextcloud.middlewares=nextcloud@docker
 
   filerun_db:
     container_name: filerun_db
@@ -62,7 +62,7 @@ services:
       MYSQL_DATABASE: ${FILERUN_DB_NAME}
     volumes:
       - ${CONF_FOLDER}/filerun_db:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
   filerun:
     container_name: filerun
     image: afian/filerun
@@ -81,7 +81,7 @@ services:
     volumes:
       - ${DATA_FOLDER}/filerun/html:/var/www/html
       - ${DATA_FOLDER}/filerun/user-files:/user-files
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.filerun.rule=Host(`${FILERUN_HOST}`)
       - traefik.http.routers.filerun.tls=true
@@ -101,7 +101,7 @@ services:
       - ${DATA_FOLDER}/onedrive:/onedrive/data
       - ${STORAGE}:/onedrive/data/serverSave:ro
       - ${DATA_FOLDER}/dropbox/:/onedrive/data/dropboxSave:ro
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
 
@@ -113,6 +113,6 @@ services:
       - DBOX_GID=${PGID}
     volumes:
       - ${DATA_FOLDER}/dropbox:/dbox/Dropbox
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false

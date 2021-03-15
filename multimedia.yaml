@@ -29,7 +29,7 @@ services:
      - 32412:32412/udp
      - 32413:32413/udp
      - 32414:32414/udp
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.plex.rule=Host(`${PLEX_HOST}`)
       - traefik.http.routers.plex.tls=true
@@ -60,7 +60,7 @@ services:
       - /dev/dri:/dev/dri #optional
       # - /dev/video0:/dev/video0 #optional
       # - /dev/video1:/dev/video1 #optional
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.jellyfin.rule=Host(`${JELLYFIN_HOST}`)
       - traefik.http.routers.jellyfin.tls=true

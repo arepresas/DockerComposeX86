@@ -107,7 +107,7 @@ services:
     volumes:
       - ~:/root
       - /:/mnt/fs
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.cloudcommander.rule=Host(`${CLOUDCOMMANDER_HOST}`)
       - traefik.http.routers.cloudcommander.tls=true
@@ -127,7 +127,7 @@ services:
       - SYS_PTRACE
     security_opt:
       - apparmor:unconfined
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.netdata.rule=Host(`${NETDATA_HOST}`)
       - traefik.http.routers.netdata.tls=true
@@ -138,7 +138,7 @@ services:
   openspeedtest:
     container_name: openspeedtest
     image: openspeedtest/latest
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.openspeedtest.rule=Host(`${OPENSPEEDTEST_HOST}`)
       - traefik.http.routers.openspeedtest.tls=true
@@ -155,7 +155,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - "GLANCES_OPT=-w"
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.glances.rule=Host(`${GLANCES_HOST}`)
       - traefik.http.routers.glances.tls=true
@@ -171,7 +171,7 @@ services:
       SIAB_PASSWORD: ${SIAB_PASS}
       SIAB_SUDO: 'true'  
       SIAB_SSL: 'false'    
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.http.routers.shellinabox.rule=Host(`${SHELLINABOX_HOST}`)
       - traefik.http.routers.shellinabox.tls=true
@@ -191,7 +191,7 @@ services:
       REPO_PASS: ${WATCHTOWER_REPO_PASS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
 
@@ -220,7 +220,7 @@ services:
       - 445:445/tcp
     tmpfs:
       - /tmp
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
 
@@ -233,7 +233,7 @@ services:
       TZ: ${TZ}
     volumes:
       - ${CONF_FOLDER}/no-ip/no-ip2.conf:/usr/local/etc/no-ip2.conf
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
 
@@ -246,7 +246,7 @@ services:
       TZ: ${TZ}
     volumes:
       - ${CONF_FOLDER}/ovh-dns/config:/config
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
 
@@ -262,6 +262,6 @@ services:
       - ${DATA_FOLDER}:/DockerData
       - ${STORAGE}:/Storage
       - ${CONF_FOLDER}/jobber:/home/jobberuser
-    restart: always
+    restart: unless-stopped
     labels:
       - traefik.enable=false
