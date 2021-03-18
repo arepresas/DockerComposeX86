@@ -1,0 +1,26 @@
+version: "3"
+services:
+  openvpn:
+    image: ghcr.io/linuxserver/openvpn-as
+    container_name: openvpn
+    cap_add:
+      - NET_ADMIN
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      # INTERFACE: eth0 #optional
+    volumes:
+      - ${CONF_FOLDER}/openvpn:/config
+    ports:
+      - 943:943
+      - 9443:9443
+      - 1194:1194/udp
+    restart: always
+    labels:
+      - traefik.http.routers.openvpn.rule=Host(`${OPENVPN_HOST}`)
+      - traefik.http.routers.openvpn.tls=true
+      - traefik.http.routers.openvpn.tls.certresolver=myresolver
+      - traefik.http.middlewares.openvpn.compress=true
+      - traefik.http.services.openvpn.loadbalancer.server.port=943
+      - traefik.http.routers.openvpn.middlewares=openvpn@docker
