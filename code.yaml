@@ -13,6 +13,8 @@ services:
       - ${CONF_FOLDER}/icecoder/data:/data # Contains ICEcoder data like backups.
       - ${CONF_FOLDER}/icecoder/config:/config # Contains config files and logs.
       - ${CONF_FOLDER}/icecoder/code:/code # Contains GITURL repository.
+    ports:
+      - 8180:8080/tcp
     restart: unless-stopped
     labels:
       - traefik.http.routers.icecoder.rule=Host(`${ICECODER_HOST}`)
@@ -34,6 +36,8 @@ services:
       - PASSWORD=${CLOUD9_PASS} #optional
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock #optional
+    ports:
+      - 8280:8000/tcp
     restart: unless-stopped
     labels:
       - traefik.http.routers.cloud9.rule=Host(`${CLOUD9_HOST}`)
@@ -55,6 +59,8 @@ services:
       - PROXY_DOMAIN=${CODESERVER_PROXY_DOMAIN} #optional
     volumes:
       - ${CONF_FOLDER}/code-server:/config
+    ports:
+      - 8380:8443/tcp
     restart: unless-stopped
     labels:
       - traefik.http.routers.code-server.rule=Host(`${CODESERVER_HOST}`)

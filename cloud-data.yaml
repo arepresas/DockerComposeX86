@@ -15,12 +15,14 @@ services:
     ports:
       - 22000:22000/tcp
       - 21027:21027/udp
+      - 6080:8384/tcp
     restart: unless-stopped
     labels:
       - traefik.http.routers.syncthing.rule=Host(`${SYNCTHING_HOST}`)
       - traefik.http.routers.syncthing.tls=true
       - traefik.http.routers.syncthing.tls.certresolver=myresolver
       - traefik.http.middlewares.syncthing.compress=true
+      - traefik.http.services.syncthing.loadbalancer.server.port=8384
       - traefik.http.routers.syncthing.middlewares=syncthing@docker
 
 #  nextcloud_db:
@@ -81,6 +83,8 @@ services:
     volumes:
       - ${DATA_FOLDER}/filerun/html:/var/www/html
       - ${DATA_FOLDER}/filerun/user-files:/user-files
+    ports:
+      - 6180:80/tcp
     restart: unless-stopped
     labels:
       - traefik.http.routers.filerun.rule=Host(`${FILERUN_HOST}`)
