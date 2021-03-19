@@ -14,7 +14,7 @@ services:
       - ${TV_SERIES_DIR}:/data/tvshows
       - ${MOVIES_DIR}:/data/movies
     ports:
-      - 7080:8096
+      - 7080:8096/tcp
       - 8920:8920 #optional
       - 7359:7359/udp #optional
       - 1901:1900/udp #optional
