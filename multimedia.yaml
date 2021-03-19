@@ -1,28 +1,20 @@
 version: "3"
 services:
   jellyfin:
-    image: ghcr.io/linuxserver/jellyfin
+    image: jellyfin/jellyfin
     container_name: jellyfin
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      UMASK: ${UMASK_SET} #optional
+    user: ${PUID}:${PGID}
+    # network_mode: "host" # Optional to activate DLNA
     volumes:
-      - ${DATA_FOLDER}/jellyfin/library:/config
-      # - /opt/vc/lib:/opt/vc/lib #optional
-      - ${TV_SERIES_DIR}:/data/tvshows
-      - ${MOVIES_DIR}:/data/movies
+      - ${DATA_FOLDER}/jellyfin/config:/config
+      - ${DATA_FOLDER}/jellyfin/cache:/cache
+      - ${TV_SERIES_DIR}:/tvshows
+      - ${MOVIES_DIR}:/movies
     ports:
       - 7080:8096/tcp
-      - 8920:8920 #optional
-      - 7359:7359/udp #optional
-      - 1901:1900/udp #optional
-    devices:
-      - /dev/dri:/dev/dri #optional
-      # - /dev/video0:/dev/video0 #optional
-      # - /dev/video1:/dev/video1 #optional
     restart: unless-stopped
+    environment:
+      - JELLYFIN_PublishedServerUrl=${JELLYFIN_HOST}
     labels:
       - traefik.http.routers.jellyfin.rule=Host(`${JELLYFIN_HOST}`)
       - traefik.http.routers.jellyfin.tls=true
@@ -38,7 +30,7 @@ services:
       PUID: ${PUID}
       PGID: ${PGID}
       TZ: ${TZ}
-      UMASK_SET: ${UMASK_SET} #optional
+      UMASK: ${UMASK_SET} #optional
       VERSION: docker
       PLEX_CLAIM: ${PLEX_CLAIM}
       ADVERTISE_IP: ${PLEX_ADVERTISE_IP}
