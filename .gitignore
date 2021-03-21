@@ -3,5 +3,4 @@
 *.iml
 # Others
 .env
-secrets
-jobber
+.utils

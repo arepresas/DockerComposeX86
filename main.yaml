@@ -103,17 +103,3 @@ services:
     tmpfs:
       - /tmp
     restart: unless-stopped
-
-  jobber:
-    container_name: jobber
-    image: jobber
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${CONF_FOLDER}:/DockerConf
-      - ${DATA_FOLDER}:/DockerData
-      - ${STORAGE}:/Storage
-      - ${CONF_FOLDER}/jobber:/home/jobberuser
-    restart: unless-stopped
