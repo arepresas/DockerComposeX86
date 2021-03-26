@@ -47,11 +47,6 @@ services:
     container_name: no-ip
     image: coppit/no-ip
     user: ${PUID}:${PGID}
-    environment:
-      USERNAME: ${NOIP_USER}
-      PASSWORD: ${NOIP_PASS}
-      DOMAINS: ${NOIP_DOMAINS} # A comma-delimited list of them
-      INTERVAL: ${NOIP_INTERVAL}
     volumes:
       - /etc/localtime:/etc/localtime
       - ${CONF_FOLDER}/no-ip:/config

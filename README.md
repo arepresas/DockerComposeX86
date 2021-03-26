@@ -12,6 +12,14 @@ File acme.json must have 600 permissions
 
 - chmod 600 /var/acme.json
 
+# No-ip
+
+Execute 
+        
+    "docker run --name=no-ip -d -v /etc/localtime:/etc/localtime -v ${path}:/config coppit/no-ip"
+
+To get a blank conf file.
+
 # Onedrive
 First you have to launch the docker in interactive mode and login:
 
