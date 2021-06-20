@@ -86,6 +86,7 @@ services:
       GROUPID: '0'
       SHARE: ${SAMBA_SHARE}
       SHARE2: ${SAMBA_SHARE2}
+      SHARE3: ${SAMBA_SHARE3}
       WORKGROUP: ${SAMBA_WORKGROUP}
     stdin_open: true
     tty: true
@@ -93,6 +94,7 @@ services:
     volumes:
       - ${STORAGE}:/Storage
       - ${DIVX}:/Divx
+      - ${DOCKER}:/Docker
     ports:
       - 137:137/udp
       - 138:138/udp
