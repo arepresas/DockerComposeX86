@@ -1,9 +1,9 @@
 version: "3"
 services:
   jellyfin:
-    image: jellyfin/jellyfin
     container_name: jellyfin
-    user: ${PUID}:${PGID}
+    image: jellyfin/jellyfin
+    user: ${ROOT_ID}:${ROOT_ID}
     # network_mode: "host" # Optional to activate DLNA
     volumes:
       - ${DATA_FOLDER}/jellyfin/config:/config
@@ -12,7 +12,6 @@ services:
       - ${MOVIES_DIR}:/movies
     ports:
       - 7080:8096/tcp
-    restart: unless-stopped
     environment:
       - JELLYFIN_PublishedServerUrl=${JELLYFIN_HOST}
     labels:
@@ -22,10 +21,12 @@ services:
       - traefik.http.middlewares.jellyfin.compress=true
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
       - traefik.http.routers.jellyfin.middlewares=jellyfin@docker
+    restart: unless-stopped
 
   plex:
-    image: linuxserver/plex
     container_name: plex
+    image: linuxserver/plex
+    user: ${ROOT_ID}:${ROOT_ID}
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
@@ -34,8 +35,8 @@ services:
       VERSION: docker
       PLEX_CLAIM: ${PLEX_CLAIM}
       ADVERTISE_IP: ${PLEX_ADVERTISE_IP}
-    devices:
-      - /dev/dri:/dev/dri #optional
+    # devices:
+    #   - /dev/dri:/dev/dri #optional
     volumes:
       - ${DATA_FOLDER}/plex/library:/config
       - ${TV_SERIES_DIR}:/tv
@@ -52,7 +53,6 @@ services:
      - 32412:32412/udp
      - 32413:32413/udp
      - 32414:32414/udp
-    restart: unless-stopped
     labels:
       - traefik.http.routers.plex.rule=Host(`${PLEX_HOST}`)
       - traefik.http.routers.plex.tls=true
@@ -60,3 +60,4 @@ services:
       - traefik.http.middlewares.plex.compress=true
       - traefik.http.services.plex.loadbalancer.server.port=32400
       - traefik.http.routers.plex.middlewares=plex@docker
+    restart: unless-stopped

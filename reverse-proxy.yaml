@@ -3,6 +3,7 @@ services:
   nginx:
     container_name: nginx
     image: 'jc21/nginx-proxy-manager:latest'
+    user: ${ROOT_ID}:${ROOT_ID}
     ports:
       - '80:80'
       - '81:81'
@@ -16,11 +17,12 @@ services:
     volumes:
       - ${CONF_FOLDER}/nginx/data:/data
       - ${CONF_FOLDER}/nginx/letsencrypt:/etc/letsencrypt
-    restart: unless-stopped
+    restart: always
 
   nginx_db:
     container_name: nginx_db
     image: 'jc21/mariadb-aria:latest'
+    user: ${ROOT_ID}:${ROOT_ID}
     environment:
       MYSQL_ROOT_PASSWORD: ${NGINX_DB_ROOT_PASS}
       MYSQL_DATABASE: ${NGINX_DB_NAME}
@@ -33,9 +35,8 @@ services:
   heimdall:
     container_name: heimdall
     image: linuxserver/heimdall
+    user: ${ROOT_ID}:${ROOT_ID}
     environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
       TZ: ${TZ}
     volumes:
       - ${CONF_FOLDER}/heimdall/config:/config
@@ -45,19 +46,20 @@ services:
 
   no-ip:
     container_name: no-ip
-    image: coppit/no-ip
-    user: ${PUID}:${PGID}
-    volumes:
-      - /etc/localtime:/etc/localtime
-      - ${CONF_FOLDER}/no-ip:/config
+    image: aanousakis/no-ip
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      USERNAME: ${NOIP_USER}
+      PASSWORD: ${NOIP_PASSWORD}
+      DOMAINS: ${NOIP_DOMAINS}
+      INTERVAL: ${NOIP_INTERVAL}
     restart: always
 
   ovh-dns:
     container_name: ovh-dns
     image: linuxserver/ddclient
+    user: ${ROOT_ID}:${ROOT_ID}
     environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
       TZ: ${TZ}
     volumes:
       - ${CONF_FOLDER}/ovh-dns/config:/config
@@ -66,13 +68,12 @@ services:
   jobber:
     container_name: jobber
     image: jobber
+    user: ${ROOT_ID}:${ROOT_ID}
     environment:
-      PUID: ${ROOT_ID}
-      PGID: ${ROOT_ID}
       TZ: ${TZ}
     volumes:
       - ${CONF_FOLDER}:/DockerConf
       - ${DATA_FOLDER}:/DockerData
       - ${STORAGE}:/Storage
       - ${CONF_FOLDER}/jobber:/home/jobberuser
-    restart: unless-stopped
+    restart: always

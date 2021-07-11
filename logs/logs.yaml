@@ -23,6 +23,8 @@ services:
       ELASTIC_PASSWORD: changeme
     networks:
       - elk
+    restart: unless-stopped
+
 
   logstash:
     container_name: logstash
@@ -48,6 +50,7 @@ services:
       - elk
     depends_on:
       - elasticsearch
+    restart: unless-stopped
 
   kibana:
     container_name: kibana
@@ -66,6 +69,7 @@ services:
       - elk
     depends_on:
       - elasticsearch
+    restart: unless-stopped
 
 networks:
   elk:

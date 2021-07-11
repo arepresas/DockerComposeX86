@@ -104,4 +104,4 @@ services:
       - 445:445/tcp
     tmpfs:
       - /tmp
-    restart: unless-stopped
+    restart: always
