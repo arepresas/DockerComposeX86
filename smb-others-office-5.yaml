@@ -1,0 +1,116 @@
+version: "3"
+services:
+  hedgedoc_db:
+    container_name: hedgedoc_db
+    image: ghcr.io/linuxserver/mariadb:latest
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      - TZ=${TZ}
+      - MYSQL_ROOT_PASSWORD=${HEDGEDOC_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${HEDGEDOC_MYSQL_DATABASE}
+      - MYSQL_USER=${HEDGEDOC_MYSQL_USER}
+      - MYSQL_PASSWORD=${HEDGEDOC_MYSQL_PASSWORD}
+    volumes:
+      - ${CONF_FOLDER}/hedgedoc/db/:/config
+    restart: unless-stopped
+  hedgedoc:
+    container_name: hedgedoc
+    image: ghcr.io/linuxserver/hedgedoc:latest
+    user: ${ROOT_ID}:${ROOT_ID}
+    depends_on:
+      - hedgedoc_db
+    environment:
+      - TZ=${TZ}
+      - DB_HOST=hedgedoc_db
+      - DB_USER=${HEDGEDOC_MYSQL_USER}
+      - DB_PASS=${HEDGEDOC_MYSQL_PASSWORD}
+      - DB_NAME=${HEDGEDOC_MYSQL_DATABASE}
+      - DB_PORT=3306
+    volumes:
+      - ${CONF_FOLDER}/hedgedoc/config:/config
+    ports:
+      - '5180:3000/tcp'
+    restart: unless-stopped
+
+  wekan_db:
+    image: quay.io/wekan/mongo:4.4.2-bionic
+    container_name: wekan_db
+    command: mongod --logpath /dev/null --oplogSize 128 --quiet
+    expose:
+      - 27017
+    volumes:
+      - ${CONF_FOLDER}/wekan/db:/data/db
+      - ${CONF_FOLDER}/wekan/db-dump:/dump
+    restart: unless-stopped
+  wekan:
+    container_name: wekan
+    image: quay.io/wekan/wekan
+    environment:
+      MONGO_URL: mongodb://wekan_db:27017/wekan
+      ROOT_URL: ${WEKAN_ROOT_URL}  #   <=== using only at same laptop/desktop where Wekan is installed
+      MAIL_URL: ${WEKAN_MAIL_URL}
+      MAIL_FROM: ${WEKAN_MAIL_FROM}
+      WITH_API: 'true'
+      RICHER_CARD_COMMENT_EDITOR: 'true'
+      CARD_OPENED_WEBHOOK_ENABLED: 'false'
+      BIGEVENTS_PATTERN: 'NONE'
+      BROWSER_POLICY_ENABLED: 'true'
+    depends_on:
+      - wekan_db
+    ports:
+      - '5280:8080/tcp'
+    restart: unless-stopped
+
+  calibre:
+    image: ghcr.io/linuxserver/calibre
+    container_name: calibre
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      TZ: ${TZ}
+      # GUAC_USER: ${CALIBRE_USER} #optional
+      # GUAC_PASS: ${CALIBRE_PASS} #optional
+      # UMASK_SET: ${UMASK_SET}
+      # CLI_ARGS: #optional
+    volumes:
+      - ${CONF_FOLDER}/calibre/data:/config
+      - ${CALIBRE_BOOKS}:/books
+      - ${CALIBRE_LIBRARY}:/library # Must be an empty folder or and old Calibre library
+    ports:
+      - '5380:8080/tcp'
+    restart: unless-stopped
+
+  wordpress_db:
+    container_name: wordpress_db
+    image: 'docker.io/bitnami/mariadb:10.3-debian-10'
+    user: root
+    volumes:
+      - ${CONF_FOLDER}/wordpress/db:/bitnami/mariadb
+    environment:
+      - MARIADB_USER=${WORDPRESS_MYSQL_USER}
+      - MARIADB_DATABASE=${WORDPRESS_MYSQL_DATABASE}
+      - MARIADB_PASSWORD=${WORDPRESS_MYSQL_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${WORDPRESS_MYSQL_ROOT_PASSWORD}
+    restart: unless-stopped
+  wordpress:
+    container_name: wordpress
+    image: 'docker.io/bitnami/wordpress:5-debian-10'
+    user: root
+    environment:
+      - MARIADB_HOST=wordpress_db
+      - MARIADB_PORT_NUMBER=3306
+      - WORDPRESS_DATABASE_USER=${WORDPRESS_MYSQL_USER}
+      - WORDPRESS_DATABASE_NAME=${WORDPRESS_MYSQL_DATABASE}
+      - WORDPRESS_DATABASE_PASSWORD=${WORDPRESS_MYSQL_PASSWORD}
+      - WORDPRESS_USERNAME=${WORDPRESS_USERNAME} # WordPress application username.
+      - WORDPRESS_PASSWORD=${WORDPRESS_PASSWORD} # WordPress application password.
+      - WORDPRESS_EMAIL=${WORDPRESS_EMAIL} # WordPress application email.
+      - WORDPRESS_FIRST_NAME=${WORDPRESS_FIRST_NAME} # WordPress user first name.
+      - WORDPRESS_LAST_NAME=${WORDPRESS_LAST_NAME} # WordPress user last name.
+      - WORDPRESS_BLOG_NAME=${WORDPRESS_BLOG_NAME} # WordPress blog name.
+    volumes:
+      - ${CONF_FOLDER}/wordpress/data:/bitnami/wordpress
+    depends_on:
+      - wordpress_db
+    ports:
+      - '5480:8080/tcp'
+    restart: unless-stopped

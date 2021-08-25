@@ -1,0 +1,181 @@
+version: "3"
+services:
+  nginx_db:
+    container_name: nginx_db
+    image: 'jc21/mariadb-aria:latest'
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NGINX_DB_ROOT_PASS}
+      MYSQL_DATABASE: ${NGINX_DB_NAME}
+      MYSQL_USER: ${NGINX_DB_USER}
+      MYSQL_PASSWORD: ${NGINX_DB_PASS}
+    volumes:
+      - ${CONF_FOLDER}/nginx/db/mysql:/var/lib/mysql
+    restart: always
+  nginx:
+    container_name: nginx
+    image: 'jc21/nginx-proxy-manager:latest'
+    user: ${ROOT_ID}:${ROOT_ID}
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "nginx_db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: ${NGINX_DB_USER}
+      DB_MYSQL_PASSWORD: ${NGINX_DB_PASS}
+      DB_MYSQL_NAME: ${NGINX_DB_NAME}
+    volumes:
+      - ${CONF_FOLDER}/nginx/data:/data
+      - ${CONF_FOLDER}/nginx/letsencrypt:/etc/letsencrypt
+    restart: always
+
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${CONF_FOLDER}/heimdall/config:/config
+    ports:
+      - '2180:80/tcp'
+    restart: always
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      TZ: ${TZ}
+      WEBPASSWORD: ${PIHOLE_PWD}
+      ServerIp: ${PIHOLE_IP}
+      IPv6: 'false'
+    volumes:
+      - ${CONF_FOLDER}/pihole/etc:/etc/pihole
+      - ${CONF_FOLDER}/pihole/dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - '2280:80/tcp'
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '67:67/udp'
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    cap_add:
+      - NET_ADMIN
+    restart: always
+
+  shellinabox:
+    container_name: shellinabox
+    image: sspreitzer/shellinabox:latest
+    environment:
+      SIAB_USER: ${SHELLINABOX_USER}
+      SIAB_PASSWORD: ${SHELLINABOX_PASS}
+      SIAB_SUDO: 'true'
+      SIAB_SSL: 'false'
+    ports:
+      - '2380:4200/tcp'
+    restart: unless-stopped
+
+  netdata:
+    container_name: netdata
+    image: netdata/netdata
+    hostname: ${NETDATA_MAIN_HOSTNAME} # set to fqdn of host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    ports:
+      - '2480:19999/tcp'
+    restart: unless-stopped
+
+  openspeedtest:
+    container_name: openspeedtest
+    image: openspeedtest/latest
+    ports:
+      - '2580:8080/tcp'
+    restart: unless-stopped
+
+  cloudcommander:
+    container_name: cloudcommander
+    image: coderaiser/cloudcmd
+    volumes:
+      - ~:/root
+      - /:/mnt/fs
+    ports:
+      - '2680:8000/tcp'
+    restart: unless-stopped
+
+  firefox:
+    container_name: firefox
+    image: jlesage/firefox
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      TZ: ${TZ}
+    shm_size: 2gb
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ${CONF_FOLDER}/firefox/config:/config:rw
+    ports:
+      - '2780:5800/tcp'
+    restart: unless-stopped
+
+  filebrowser:
+    container_name: filebrowser
+    image: filebrowser/filebrowser
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      TZ: ${TZ}
+    shm_size: 2gb
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - /:/srv
+    ports:
+      - '2880:80/tcp'
+    restart: unless-stopped
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    command: -H unix:///var/run/docker.sock
+    environment:
+      AGENT_SECRET: my_secret_token_1234567890abcdef
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONF_FOLDER}/portainer/volumes:/var/lib/docker/volumes
+    ports:
+      - '2980:9000/tcp'
+      - '8000:8000/tcp'
+    restart: always
+
+  no-ip:
+    container_name: no-ip
+    image: aanousakis/no-ip
+    user: ${ROOT_ID}:${ROOT_ID}
+    environment:
+      USERNAME: ${NOIP_USER}
+      PASSWORD: ${NOIP_PASSWORD}
+      DOMAINS: ${NOIP_DOMAINS}
+      INTERVAL: ${NOIP_INTERVAL}
+    restart: always
+
+#  jobber:
+#    container_name: jobber
+#    image: jobber
+#    user: ${ROOT_ID}:${ROOT_ID}
+#    environment:
+#      TZ: ${TZ}
+#    volumes:
+#      - ${CONF_FOLDER}:/DockerConf
+#      - ${DATA_FOLDER}:/DockerData
+#      - ${STORAGE_FOLDER}:/Storage
+#      - ${CONF_FOLDER}/jobber:/home/jobberuser
+#    restart: always

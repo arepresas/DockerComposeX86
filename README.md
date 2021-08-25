@@ -51,6 +51,18 @@ To add jobs, you must add a file **.jobber** in jobber folder like this example
 
 It will execute script **backup.sh** everyday at 5am
 
+# Save database from container
+
+```
+docker exec CONTAINER /usr/bin/mysqldump -u root --password=root DATABASE > backup.sql
+```
+
+# Restore database to container
+
+```
+cat backup.sql | docker exec -i CONTAINER /usr/bin/mysql -u root --password=root DATABASE
+```
+
 # Utils
 
 To auto restart docker containers after a shutdown:
@@ -71,6 +83,29 @@ Fix inotify:
 Delete logs of all containers:
 
 - sudo sh -c "truncate -s 0 /var/lib/docker/containers/*/*-json.log"
+
+Mount SMB volumes:
+
+- /etc/fstab
+
+    ```
+    //server-ip/ProxmoxDockerConf /ProxmoxDockerConf cifs credentials=/home/user/.smb,file_mode=0666,dir_mode=0777,nobrl,_netdev 0 0
+    //server-ip/ProxmoxDockerData /ProxmoxDockerData cifs credentials=/home/user/.smb,file_mode=0666,dir_mode=0777,nobrl,_netdev 0 0
+    //server-ip/ProxmoxData /ProxmoxData cifs credentials=/home/user/.smb,file_mode=0666,dir_mode=0777,nobrl,_netdev 0 0
+    //server-ip/ProxmoxDivx /ProxmoxDivx cifs credentials=/home/user/.smb,file_mode=0666,dir_mode=0777,nobrl,_netdev 0 0
+  
+    nobrl -> To solve problem with SQLite
+    _netdev -> Wait for smb mount to complete
+  
+    ```
+
+- /home/user/.smb
+
+    ```
+    user=USER
+    password=PASS
+    domain=myDomain
+    ```
 
 # Proxmox
 
