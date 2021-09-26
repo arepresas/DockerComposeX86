@@ -1,0 +1,54 @@
+version: '3'
+services:
+  vpn:
+    image: dperson/openvpn-client
+    container_name: vpn
+    user: ${ROOT_ID}:${ROOT_ID}
+    devices:
+      - '/dev/net/tun:/dev/net/tun:rwm'
+    environment:
+      TZ: ${TZ}
+      FIREWALL: ''
+      ROUTE: '192.168.1.0/24'
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - label:disable
+    networks:
+      - default
+    ports:
+      - '80:80/tcp'
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '67:67/udp'
+    read_only: true
+    tmpfs:
+      - /run
+      - /tmp
+    stdin_open: true
+    tty: true
+    volumes:
+      - /dev/net:/dev/net:z
+      - ${CONF_FOLDER}/vpn:/vpn
+    restart: unless-stopped
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    user: ${ROOT_ID}:${ROOT_ID}
+    depends_on:
+      - vpn
+    environment:
+      TZ: ${TZ}
+      WEBPASSWORD: ${PIHOLE_PWD}
+      ServerIp: ${PIHOLE_IP}
+      IPv6: 'false'
+    volumes:
+      - ${CONF_FOLDER}/pihole/etc:/etc/pihole
+      - ${CONF_FOLDER}/pihole/dnsmasq.d:/etc/dnsmasq.d
+    cap_add:
+      - NET_ADMIN
+    network_mode: service:vpn
+    stdin_open: true
+    tty: true
+    restart: always

@@ -1,0 +1,94 @@
+version: '3.4'
+
+services:
+  vpn:
+    container_name: vpn
+    image: dperson/openvpn-client
+    restart: unless-stopped
+    ports:
+      - '9091:9091'
+      - '8000:8000'
+      - '53:53'
+      - '53:53/udp'
+      - '67:67/udp'
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - '/dev/net/tun:/dev/net/tun:rwm'
+    environment:
+#      FIREWALL: ''
+      PUID: 0
+      PGID: 0
+      TZ: Europe/Paris
+#      ROUTE: '192.168.1.0/16'
+    networks:
+      - default
+    read_only: true
+    tmpfs:
+      - /run
+      - /tmp
+    security_opt:
+      - label:disable
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./vpn:/vpn
+
+  transmission:
+    container_name: transmission
+    image: dperson/transmission
+    restart: unless-stopped
+    network_mode: service:vpn
+    depends_on:
+      - vpn
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: PST8PDT
+      TRUSER: 'admin'
+      TRPASSWD: 'password123'
+      TR_MAX_PEERS_GLOBAL: 400
+      TR_DOWNLOAD_DIR: "/mnt/shares/shareddl/_test/downloads/finished"
+      TR_INCOMPLETE_DIR_ENABLED: "true"
+      TR_INCOMPLETE_DIR: "/mnt/shares/shareddl/_test/downloads/incomplete"
+      TR_WATCH_DIR_ENABLED: "true"
+      TR_WATCH_DIR: "/mnt/shares/shareddl/_test/downloads/watched"
+
+  whoami:
+    container_name: whoami
+    image: jwilder/whoami
+    restart: unless-stopped
+    network_mode: service:vpn
+    depends_on:
+      - vpn
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    user: ${ROOT_ID}:${ROOT_ID}
+    depends_on:
+      - vpn
+    environment:
+      TZ: ${TZ}
+      WEBPASSWORD: ${PIHOLE_PWD}
+      ServerIp: ${PIHOLE_IP}
+      IPv6: 'false'
+    volumes:
+      - ${CONF_FOLDER}/pihole/etc:/etc/pihole
+      - ${CONF_FOLDER}/pihole/dnsmasq.d:/etc/dnsmasq.d
+    cap_add:
+      - NET_ADMIN
+    network_mode: service:vpn
+    stdin_open: true
+    tty: true
+    restart: always
+
+networks:
+  default:

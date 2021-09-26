@@ -51,6 +51,14 @@ To add jobs, you must add a file **.jobber** in jobber folder like this example
 
 It will execute script **backup.sh** everyday at 5am
 
+# OpenVpnClient
+
+Place the following files in the /vpn folder:
+
+- vpn.conf (rename from .ovpn)
+- vpn-ca.crt (extract from ovpn or rename from a ca.crt)
+- In vpn.conf add auth-user-pass </path/to/file> with your VPN username and password, each on a line by themselves. ie: auth-user-pass /vpn/credentials.conf
+
 # Save database from container
 
 ```
@@ -68,6 +76,10 @@ cat backup.sql | docker exec -i CONTAINER /usr/bin/mysql -u root --password=root
 To auto restart docker containers after a shutdown:
 
 - systemctl enable --now docker.service
+
+To prune all old data from docker
+
+- docker system prune -a --volumes
 
 To change Docker Root Dir:
 
