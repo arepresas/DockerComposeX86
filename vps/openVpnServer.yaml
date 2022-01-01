@@ -1,0 +1,74 @@
+version: '3'
+services:
+  openvpn:
+    container_name: openvpn
+    image: kylemanna/openvpn
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - '1194:1194/udp'
+      - '1194:1194/tcp'
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+     #  - VIRTUAL_PORT=${VIRTUAL_PORT_OPENVPN}
+     #  - VIRTUAL_HOST=${VIRTUAL_HOST_OPENVPN}
+     #  - LETSENCRYPT_HOST=${LETSENCRYPT_HOST_VPN}
+     #  - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+     #  - OPENVPN_PROVIDER=${OPENVPN_PROVIDER}
+     #  - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+     #  - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+     # - LOCAL_NETWORK=192.168.0.0/24
+      OPENVPN_OPTS: --inactive 3600 --ping 10 --ping-exit 60 -   ^`^slog-driver json-file --log-opt max-size=10m
+    volumes:
+      - ./${OPENVPN_FOLDER}:/etc/openvpn
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      vpn-net:
+        ipv4_address: ${OPENVPN_IP}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: always
+
+  pihole:
+    image: pihole/pihole
+    container_name: pihole
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    depends_on:
+      - openvpn
+    environment:
+      TZ: ${TZ}
+      WEBPASSWORD: ${PIHOLE_PWD}
+      ServerIp: ${PIHOLE_IP}
+      IPv6: 'false'
+      DNS1: ${PIHOLE_DNS}
+    volumes:
+      - ./${PIHOLE_FOLDER}/conf:/etc/pihole
+      - ./${PIHOLE_FOLDER}/dnsmasq.d:/etc/dnsmasq.d
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      vpn-net:
+        ipv4_address: ${PIHOLE_IP}
+    ports:
+      - '8080:80'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+    restart: always
+
+networks:
+  vpn-net:
+    external: true
+
+# docker network create --driver=bridge --subnet=172.20.0.0/24 --gateway=172.20.0.1 vpn-net
