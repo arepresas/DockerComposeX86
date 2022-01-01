@@ -1,10 +1,9 @@
 version: '3'
-
 services:
-
-  vpn:
-    container_name: vpn
+  openvpn:
+    container_name: openvpn
     image: kylemanna/openvpn
+    user: root
     cap_add:
       - NET_ADMIN
     ports:
@@ -21,9 +20,9 @@ services:
      # - LOCAL_NETWORK=192.168.0.0/24
       OPENVPN_OPTS: --inactive 3600 --ping 10 --ping-exit 60 -   ^`^slog-driver json-file --log-opt max-size=10m
     volumes:
+      - ./${OPENVPN_FOLDER}:/etc/openvpn
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - ${CONF_FOLDER}/openvpn_data:/etc/openvpn
     networks:
       vpn-net:
         ipv4_address: ${OPENVPN_IP}
@@ -43,7 +42,7 @@ services:
       - 127.0.0.1
       - 1.1.1.1
     depends_on:
-      - vpn
+      - openvpn
     environment:
       TZ: ${TZ}
       WEBPASSWORD: ${PIHOLE_PWD}
@@ -51,13 +50,15 @@ services:
       IPv6: 'false'
       DNS1: ${PIHOLE_DNS}
     volumes:
-      - ${CONF_FOLDER}/pihole:/etc/pihole
-      - ${CONF_FOLDER}/pihole/dnsmasq.d:/etc/dnsmasq.d
+      - ./${PIHOLE_FOLDER}/conf:/etc/pihole
+      - ./${PIHOLE_FOLDER}/dnsmasq.d:/etc/dnsmasq.d
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     networks:
       vpn-net:
         ipv4_address: ${PIHOLE_IP}
+    ports:
+      - '8080:80'
     logging:
       driver: "json-file"
       options:

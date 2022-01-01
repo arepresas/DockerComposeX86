@@ -3,6 +3,7 @@ services:
   gdrive:
     container_name: gdrive
     image: maltokyo/docker-google-drive-ocamlfuse:0.7.26 # this version is in sync with the official google-drive-ocamlfuse release, starting at 0.7.19
+    user: root
     environment:
       # below are must have for first run only, after that comment them out!
       CLIENT_ID: ${GDRIVE_CLIENT_ID}
@@ -17,6 +18,6 @@ services:
     devices:
       - "/dev/fuse"
     volumes:
-      - ${DATA_FOLDER}/${GDRIVE_FOLDER}:/mnt/gdrive:shared
-      - ${CONF_FOLDER}/${GDRIVE_FOLDER}/config:/config/.gdfuse/default
+      - ./${GDRIVE_FOLDER}:/mnt/gdrive:shared
+      - ./${GDRIVE_CONF_FOLDER}:/config/.gdfuse/default
     restart: always

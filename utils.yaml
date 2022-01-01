@@ -1,0 +1,49 @@
+version: "3"
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./${PORTAINER_FOLDER}/volumes:/var/lib/docker/volumes
+    ports:
+      - '8000:8000/tcp'
+      - '81:9000/tcp'
+    restart: always
+
+  shellinabox:
+    container_name: shellinabox
+    image: sspreitzer/shellinabox:latest
+    environment:
+      SIAB_USER: ${SIAB_USER}
+      SIAB_PASSWORD: ${SIAB_PASS}
+      SIAB_SUDO: 'true'
+      SIAB_SSL: 'false'
+    ports:
+      - '82:4200/tcp'
+    restart: unless-stopped
+
+  glances:
+    container_name: glances
+    image: nicolargo/glances:latest-alpine
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "GLANCES_OPT=-w"
+    ports:
+      - '83:61208/tcp'
+    restart: unless-stopped
+
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall
+    user: root
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ./${HEIMDALL_FOLDER}/config:/config
+    ports:
+      - '84:80/tcp'
+    restart: always
